@@ -3,3 +3,7 @@ key-json/
 key-json/
 sa-temp.json
 service-account.json
+key-json/
+.env.local
+sa-temp.json
+service-account.json
