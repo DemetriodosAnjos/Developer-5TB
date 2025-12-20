@@ -1,0 +1,37 @@
+[00:00:11.770] Server  LOG     ✓ Ready in 7.7s
+[00:00:36.474] Server  LOG     DBG: GOOGLE_CLIENT_EMAIL defined: true
+[00:00:36.475] Server  LOG     DBG: GOOGLE_PRIVATE_KEY defined: true
+[00:00:36.477] Server  LOG     DBG: GOOGLE_PRIVATE_KEY length: 1704
+[00:00:36.477] Server  LOG     DBG: GOOGLE_APPLICATION_CREDENTIALS: "undefined"
+[00:00:36.478] Server  LOG     DBG: DRIVE_FILE_ID defined: true
+[00:00:39.735] Server  WARN    SDK do Mercado Pago: método de configuração não encontrado. Continuando sem configurar via SDK.
+[00:00:39.739] Server  LOG     DBG: private_key preview: "-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCpX6yCtiLuHJqx\\nDMUtwr6YflEi42Z0BlH4hCoGp+qnD5Eh5wiMMwhcmDI2t05wGLIhDBRyqMwV8j1g\\nNy"
+[00:00:39.740] Server  LOG     DBG: private_key contains ENCRYPTED: false
+[00:00:39.741] Server  LOG     DBG: private_key contains BEGIN RSA PRIVATE KEY: false
+[00:00:39.742] Server  LOG     DBG: private_key contains BEGIN PRIVATE KEY: true
+[00:00:39.743] Server  LOG     DBG: private_key contains literal backslash-n sequences: false
+[00:00:40.411] Server  LOG     DBG: Google auth OK, token keys: ["access_token","token_type","expiry_date","id_token","refresh_token"]
+[00:09:15.956] Server  LOG     DBG: GOOGLE_CLIENT_EMAIL defined: true
+[00:09:15.961] Server  LOG     DBG: GOOGLE_PRIVATE_KEY defined: true
+[00:09:15.963] Server  LOG     DBG: GOOGLE_PRIVATE_KEY length: 1704
+[00:09:15.971] Server  LOG     DBG: GOOGLE_APPLICATION_CREDENTIALS: "undefined"
+[00:09:15.974] Server  LOG     DBG: DRIVE_FILE_ID defined: true
+[00:09:15.979] Server  WARN    SDK do Mercado Pago: método de configuração não encontrado. Continuando sem configurar via SDK.
+[00:09:15.995] Server  LOG     DBG: private_key preview: "-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCpX6yCtiLuHJqx\\nDMUtwr6YflEi42Z0BlH4hCoGp+qnD5Eh5wiMMwhcmDI2t05wGLIhDBRyqMwV8j1g\\nNy"
+[00:09:16.004] Server  LOG     DBG: private_key contains ENCRYPTED: false
+[00:09:16.013] Server  LOG     DBG: private_key contains BEGIN RSA PRIVATE KEY: false
+[00:09:16.028] Server  LOG     DBG: private_key contains BEGIN PRIVATE KEY: true
+[00:09:16.030] Server  LOG     DBG: private_key contains literal backslash-n sequences: false
+[00:09:16.467] Server  LOG     DBG: Google auth OK, token keys: ["access_token","token_type","expiry_date","id_token","refresh_token"]
+[00:10:17.579] Server  LOG     DBG: GOOGLE_CLIENT_EMAIL defined: true
+[00:10:17.582] Server  LOG     DBG: GOOGLE_PRIVATE_KEY defined: true
+[00:10:17.582] Server  LOG     DBG: GOOGLE_PRIVATE_KEY length: 1704
+[00:10:17.582] Server  LOG     DBG: GOOGLE_APPLICATION_CREDENTIALS: "undefined"
+[00:10:17.583] Server  LOG     DBG: DRIVE_FILE_ID defined: true
+[00:10:17.584] Server  WARN    SDK do Mercado Pago: método de configuração não encontrado. Continuando sem configurar via SDK.
+[00:10:17.585] Server  LOG     DBG: private_key preview: "-----BEGIN PRIVATE KEY-----\\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCpX6yCtiLuHJqx\\nDMUtwr6YflEi42Z0BlH4hCoGp+qnD5Eh5wiMMwhcmDI2t05wGLIhDBRyqMwV8j1g\\nNy"
+[00:10:17.586] Server  LOG     DBG: private_key contains ENCRYPTED: false
+[00:10:17.586] Server  LOG     DBG: private_key contains BEGIN RSA PRIVATE KEY: false
+[00:10:17.588] Server  LOG     DBG: private_key contains BEGIN PRIVATE KEY: true
+[00:10:17.588] Server  LOG     DBG: private_key contains literal backslash-n sequences: false
+[00:10:17.907] Server  LOG     DBG: Google auth OK, token keys: ["access_token","token_type","expiry_date","id_token","refresh_token"]

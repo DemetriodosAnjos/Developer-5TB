@@ -1,0 +1,3 @@
+{
+  "/api/payment-webhook": "pages/api/payment-webhook.js"
+}
