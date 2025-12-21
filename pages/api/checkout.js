@@ -1,72 +1,76 @@
-import { MercadoPagoConfig, Preference } from "mercadopago";
+import { useState } from "react";
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).end("Method Not Allowed");
-  }
+export default function CheckoutPage() {
+  const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const MP_TOKEN =
-    process.env.MP_ACCESS_TOKEN || process.env.MERCADO_PAGO_ACCESS_TOKEN;
+  const emailsMatch = email && confirmEmail && email === confirmEmail;
 
-  if (!MP_TOKEN) {
-    console.error("MP access token is not defined in environment variables");
-    return res
-      .status(500)
-      .json({ error: "Server configuration error: missing payment token" });
-  }
-
-  try {
-    console.log("TOKEN_PRESENT:", !!MP_TOKEN);
-
-    const client = new MercadoPagoConfig({
-      accessToken: MP_TOKEN,
-    });
-
-    const preference = new Preference(client);
-
-    const items = (req.body && req.body.items) || [
-      { title: "Develop +5TB de Cursos", unit_price: 1.5, quantity: 1 },
-    ];
-
-    const response = await preference.create({
-      body: {
-        items,
-        back_urls: {
-          success:
-            "https://unschematically-elective-danyell.ngrok-free.dev/success",
-          failure:
-            "https://unschematically-elective-danyell.ngrok-free.dev/failure",
-          pending:
-            "https://unschematically-elective-danyell.ngrok-free.dev/pending",
-        },
-        auto_return: "approved",
-        notification_url:
-          "https://unschematically-elective-danyell.ngrok-free.dev/api/payment-webhook",
-
-        // ✅ Ativa Pix como meio de pagamento
-        payment_methods: {
-          excluded_payment_types: [], // permite todos os tipos
-          default_payment_method_id: null, // não força nenhum método
-        },
-      },
-    });
-
-    const initPoint =
-      response?.init_point ||
-      response?.body?.init_point ||
-      response?.response?.init_point;
-
-    if (!initPoint) {
-      console.error("Mercado Pago response missing init_point:", response);
-      return res
-        .status(502)
-        .json({ error: "Payment provider did not return a checkout URL" });
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: [
+            { title: "Develop +5TB de Cursos", unit_price: 1.49, quantity: 1 },
+          ],
+          email, // 🔑 envia o e‑mail para o backend se precisar
+        }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err) {
+      console.error("Erro ao iniciar checkout:", err);
+      setLoading(false);
     }
+  };
 
-    return res.status(200).json({ url: initPoint });
-  } catch (error) {
-    console.error("Erro Mercado Pago:", error);
-    return res.status(500).json({ error: "Internal server error" });
-  }
+  return (
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h2>Finalize seu pagamento</h2>
+
+      <div style={{ marginBottom: "20px" }}>
+        <input
+          type="email"
+          placeholder="Digite seu e‑mail"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ padding: "10px", width: "250px", marginBottom: "10px" }}
+        />
+        <br />
+        <input
+          type="email"
+          placeholder="Confirme seu e‑mail"
+          value={confirmEmail}
+          onChange={(e) => setConfirmEmail(e.target.value)}
+          style={{ padding: "10px", width: "250px" }}
+        />
+        {!emailsMatch && confirmEmail && (
+          <p style={{ color: "red", marginTop: "8px" }}>
+            ⚠️ Os e‑mails não coincidem
+          </p>
+        )}
+      </div>
+
+      <button
+        onClick={handleCheckout}
+        disabled={!emailsMatch || loading}
+        style={{
+          padding: "12px 24px",
+          backgroundColor: emailsMatch ? "#1976d2" : "#aaa",
+          color: "#fff",
+          border: "none",
+          borderRadius: "6px",
+          cursor: emailsMatch ? "pointer" : "not-allowed",
+        }}
+      >
+        {loading ? "⏳ Gerando checkout..." : "Pagar com Pix"}
+      </button>
+    </div>
+  );
 }

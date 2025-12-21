@@ -1,4 +1,6 @@
 // pages/api/payment-webhook.js
+import nodemailer from "nodemailer";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Use POST" });
@@ -8,34 +10,45 @@ export default async function handler(req, res) {
     const mpModule = await import("mercadopago");
     const { MercadoPagoConfig, Payment } = mpModule;
 
-    // Inicializa cliente Mercado Pago
     const client = new MercadoPagoConfig({
       accessToken: process.env.MP_ACCESS_TOKEN,
     });
     const paymentClient = new Payment(client);
 
-    // O Mercado Pago envia algo como { action: "payment.created", data: { id: "123456789" } }
-    const { type, data } = req.body || {};
+    const { type, data, email: frontendEmail } = req.body || {};
     const paymentId = data?.id;
 
+    console.log("Webhook recebido:", req.body);
+
     if (!paymentId) {
-      console.error("Webhook sem paymentId:", req.body);
       return res.status(400).json({ error: "paymentId não encontrado" });
     }
 
-    // Consulta o pagamento na API do Mercado Pago
-    const payment = await paymentClient.get({ id: paymentId });
-
-    if (payment?.status !== "approved") {
-      return res.status(200).json({ message: "Pagamento não aprovado" });
+    let payment;
+    try {
+      payment = await paymentClient.get({ id: paymentId });
+    } catch (err) {
+      console.error("Erro ao consultar pagamento:", err);
+      return res.status(500).json({ error: "Falha ao consultar pagamento" });
     }
 
-    const buyerEmail = payment?.payer?.email;
+    console.log("Status do pagamento:", payment?.status);
+
+    if (payment?.status !== "approved") {
+      return res
+        .status(200)
+        .json({ message: "Pagamento não aprovado", status: payment?.status });
+    }
+
+    // 🔑 Usa o e‑mail do Mercado Pago ou o do frontend como fallback
+    const buyerEmail = payment?.payer?.email || frontendEmail;
     if (!buyerEmail) {
       return res
         .status(400)
         .json({ error: "Email do comprador não encontrado" });
     }
+
+    console.log("Comprador:", buyerEmail);
 
     // --- Google Drive ---
     const { google } = await import("googleapis");
@@ -50,7 +63,6 @@ export default async function handler(req, res) {
 
     const drive = google.drive({ version: "v3", auth: googleClient });
 
-    // Cria permissão para o comprador
     await drive.permissions.create({
       fileId: process.env.DRIVE_FILE_ID,
       requestBody: {
@@ -58,12 +70,40 @@ export default async function handler(req, res) {
         role: "reader",
         emailAddress: buyerEmail,
       },
-      sendNotificationEmail: true, // dispara e-mail automático do Google
+      sendNotificationEmail: true,
     });
 
-    return res
-      .status(200)
-      .json({ ok: true, message: "Acesso liberado ao PDF" });
+    // --- Nodemailer (envio manual do e‑mail) ---
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Suporte Developer 5TB" <${process.env.SMTP_USER}>`,
+      to: buyerEmail,
+      subject: "Seu acesso ao material foi liberado 🎉",
+      html: `
+        <h2>Parabéns, seu pagamento foi aprovado!</h2>
+        <p>Segue o link para acessar seu material:</p>
+        <p><a href="${process.env.DOWNLOAD_LINK}" target="_blank">Clique aqui para baixar</a></p>
+        <p>Obrigado pela confiança e bons estudos 🚀</p>
+      `,
+    });
+
+    console.log(`Permissão criada e e‑mail enviado para ${buyerEmail}`);
+
+    return res.status(200).json({
+      ok: true,
+      status: "approved",
+      email: buyerEmail,
+      message: "Pagamento aprovado. Acesso liberado e e‑mail enviado.",
+    });
   } catch (err) {
     console.error("Erro no webhook:", err);
     return res
