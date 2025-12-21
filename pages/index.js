@@ -51,8 +51,12 @@ export default function Home() {
         <p className={styles.priceText}>R$ 19,90</p>
       </div>
 
-      <button className={styles.button} onClick={handleCheckout}>
-        Garantir acesso vitalício
+      <button
+        className={styles.button}
+        onClick={() => (window.location.href = "/checkout")}
+      >
+        {" "}
+        Garantir acesso vitalício{" "}
       </button>
     </div>
   );
