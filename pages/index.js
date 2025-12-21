@@ -24,12 +24,12 @@ export default function Home() {
 
       <div className={styles.price}>
         <p className={styles.textDescribe}>Por apenas</p>
-        <p className={styles.priceText}>R$ 19,90</p>
+        <p className={styles.priceText}>R$ 1,49</p>
       </div>
 
       <button
         className={styles.button}
-        onClick={() => (window.location.href = "/checkout")}
+        onClick={() => (window.location.href = "/checkoutFront")}
       >
         Garantir acesso vitalício
       </button>
