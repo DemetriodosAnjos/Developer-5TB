@@ -30,7 +30,7 @@ export default async function handler(req, res) {
 
     // Use request body if provided, otherwise fall back to a safe default
     const items = (req.body && req.body.items) || [
-      { title: "PDF com +5TB de Cursos", unit_price: 19.9, quantity: 1 },
+      { title: "Develop +5TB de Cursos", unit_price: 19.9, quantity: 1 },
     ];
 
     const response = await preference.create({
