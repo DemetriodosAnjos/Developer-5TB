@@ -5,12 +5,15 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
 
   try {
-    const { email, method } = req.body;
-    if (!email) return res.status(400).json({ error: "E‑mail é obrigatório" });
+    const { email } = req.body;
+    if (!email || email.trim() === "") {
+      return res.status(400).json({ error: "E‑mail é obrigatório" });
+    }
 
     const MP_TOKEN = process.env.MP_ACCESS_TOKEN;
-    if (!MP_TOKEN)
+    if (!MP_TOKEN) {
       return res.status(500).json({ error: "MP_ACCESS_TOKEN não configurado" });
+    }
 
     const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
     const preference = new Preference(client);
@@ -21,7 +24,7 @@ export default async function handler(req, res) {
           {
             title: "Acesso ao conteúdo exclusivo",
             quantity: 1,
-            unit_price: 19.9,
+            unit_price: 1.49,
             currency_id: "BRL",
           },
         ],
@@ -37,7 +40,7 @@ export default async function handler(req, res) {
       },
     });
 
-    return res.status(200).json({ url: response.init_point });
+    return res.status(200).json({ url: response.init_point, id: response.id });
   } catch (err) {
     console.error("Erro no checkout:", err);
     return res.status(500).json({ error: "Erro interno no servidor" });

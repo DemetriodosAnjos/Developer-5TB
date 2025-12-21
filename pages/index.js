@@ -1,7 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import styles from "../styles/Home.module.css"; // importa o CSS Module
 
 export default function Home() {
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/checkoutBack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: "usuario@teste.com" }), // ou capturar do input
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        window.location.href = data.url; // redireciona para o checkout oficial do Mercado Pago
+      } else {
+        alert("Erro ao iniciar pagamento");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Erro de conexão com servidor");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Acesso Liberado</h1>
@@ -29,9 +53,10 @@ export default function Home() {
 
       <button
         className={styles.button}
-        onClick={() => (window.location.href = "/checkoutFront")}
+        onClick={handleCheckout}
+        disabled={loading}
       >
-        Garantir acesso vitalício
+        {loading ? "⏳ Processando..." : "Garantir acesso vitalício"}
       </button>
     </div>
   );
