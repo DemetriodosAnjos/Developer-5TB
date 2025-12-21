@@ -10,9 +10,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "E‑mail é obrigatório" });
     }
 
-    const MP_TOKEN = process.env.MP_ACCESS_TOKEN;
+    const MP_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN;
     if (!MP_TOKEN) {
-      return res.status(500).json({ error: "MP_ACCESS_TOKEN não configurado" });
+      return res
+        .status(500)
+        .json({ error: "MERCADO_PAGO_ACCESS_TOKEN não configurado" });
     }
 
     const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
