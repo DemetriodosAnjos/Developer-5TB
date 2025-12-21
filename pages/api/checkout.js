@@ -41,10 +41,14 @@ export default async function handler(req, res) {
             "https://unschematically-elective-danyell.ngrok-free.dev/pending",
         },
         auto_return: "approved",
-
-        // 🔑 Aqui está a linha nova:
         notification_url:
           "https://unschematically-elective-danyell.ngrok-free.dev/api/payment-webhook",
+
+        // ✅ Ativa Pix como meio de pagamento
+        payment_methods: {
+          excluded_payment_types: [], // permite todos os tipos
+          default_payment_method_id: null, // não força nenhum método
+        },
       },
     });
 
