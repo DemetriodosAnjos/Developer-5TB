@@ -40,10 +40,7 @@ export default function FailurePage() {
           <h1 style={{ color: "#c62828" }}>❌ Ops!</h1>
           <h2>Seu pagamento não foi concluído</h2>
           <p>Tente novamente ou escolha outro meio de pagamento.</p>
-          <a
-            href="https://developer-5-tb.vercel.app"
-            style={{ color: "#1976d2" }}
-          >
+          <a href="/pendente" style={{ color: "#1976d2" }}>
             Voltar à loja
           </a>
         </div>

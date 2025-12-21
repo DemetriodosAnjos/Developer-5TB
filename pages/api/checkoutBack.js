@@ -25,11 +25,11 @@ export default async function handler(req, res) {
             currency_id: "BRL",
           },
         ],
-        // ✅ removido payer.email, Mercado Pago coleta no checkout
+
         back_urls: {
-          success: "https://developer-5-tb.vercel.app/sucesso",
-          failure: "https://developer-5-tb.vercel.app/erro",
-          pending: "https://developer-5-tb.vercel.app/pendente",
+          success: "https://developer-5-tb.vercel.app/success",
+          failure: "https://developer-5-tb.vercel.app/failure",
+          pending: "https://developer-5-tb.vercel.app/pending",
         },
         auto_return: "approved",
         notification_url:
