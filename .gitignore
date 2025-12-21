@@ -1,0 +1,8 @@
+node_modules
+node_modules/
+.env.local
+service-account.json
+sa-temp.json
+key-json/
+project.tar.gz
+.next/
