@@ -20,6 +20,11 @@ export default async function handler(req, res) {
 
     console.log("Webhook recebido:", req.body);
 
+    // ✅ Ignora notificações que não sejam de pagamento
+    if (type !== "payment") {
+      return res.status(200).json({ message: "Webhook ignorado", type });
+    }
+
     if (!paymentId) {
       return res.status(400).json({ error: "paymentId não encontrado" });
     }
@@ -34,10 +39,20 @@ export default async function handler(req, res) {
 
     console.log("Status do pagamento:", payment?.status);
 
-    if (payment?.status !== "approved") {
+    // ✅ Trata diferentes status
+    if (payment?.status === "approved") {
+      // segue fluxo normal
+    } else if (
+      payment?.status === "pending" ||
+      payment?.status === "in_process"
+    ) {
       return res
         .status(200)
-        .json({ message: "Pagamento não aprovado", status: payment?.status });
+        .json({ message: "Pagamento pendente", status: payment?.status });
+    } else {
+      return res
+        .status(200)
+        .json({ message: "Pagamento rejeitado", status: payment?.status });
     }
 
     // 🔑 Usa o e‑mail do Mercado Pago ou o do frontend como fallback
@@ -51,6 +66,10 @@ export default async function handler(req, res) {
     console.log("Comprador:", buyerEmail);
 
     // --- Google Drive ---
+    if (!process.env.GOOGLE_PRIVATE_KEY || !process.env.GOOGLE_CLIENT_EMAIL) {
+      throw new Error("Credenciais do Google não configuradas");
+    }
+
     const { google } = await import("googleapis");
     const { JWT } = await import("google-auth-library");
 
@@ -73,11 +92,11 @@ export default async function handler(req, res) {
       sendNotificationEmail: true,
     });
 
-    // --- Nodemailer (envio manual do e‑mail) ---
+    // --- Nodemailer ---
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
       port: process.env.SMTP_PORT,
-      secure: false,
+      secure: process.env.SMTP_PORT === "465", // ✅ ajusta conforme porta
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
