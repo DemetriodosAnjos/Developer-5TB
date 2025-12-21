@@ -5,11 +5,6 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
 
   try {
-    const { email } = req.body;
-    if (!email || email.trim() === "") {
-      return res.status(400).json({ error: "E‑mail é obrigatório" });
-    }
-
     const MP_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN;
     if (!MP_TOKEN) {
       return res
@@ -30,7 +25,7 @@ export default async function handler(req, res) {
             currency_id: "BRL",
           },
         ],
-        payer: { email },
+        // ✅ removido payer.email, Mercado Pago coleta no checkout
         back_urls: {
           success: "https://developer-5-tb.vercel.app/sucesso",
           failure: "https://developer-5-tb.vercel.app/erro",

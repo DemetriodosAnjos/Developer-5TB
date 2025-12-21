@@ -19,23 +19,6 @@ body {
   margin-bottom: 0;
 }
 
-.input {
-  padding: 12px;
-  font-size: 1.2rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  margin-bottom: 1rem;
-  width: 100%;
-  max-width: 320px;
-  text-align: center;
-}
-
-.input:focus {
-  outline: none;
-  border-color: #4caf50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
-}
-
 .subtitle {
   display: flex;
   align-items: center;

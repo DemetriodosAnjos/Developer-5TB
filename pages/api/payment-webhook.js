@@ -10,13 +10,12 @@ export default async function handler(req, res) {
     const mpModule = await import("mercadopago");
     const { MercadoPagoConfig, Payment } = mpModule;
 
-    // ✅ Corrigido: usa a variável correta
     const client = new MercadoPagoConfig({
       accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
     });
     const paymentClient = new Payment(client);
 
-    const { type, data, email: frontendEmail } = req.body || {};
+    const { type, data } = req.body || {};
     const paymentId = data?.id;
 
     console.log("Webhook recebido:", req.body);
@@ -42,8 +41,8 @@ export default async function handler(req, res) {
 
     // ✅ Fluxo de status
     if (payment?.status === "approved") {
-      // 🔑 Usa o e‑mail do Mercado Pago ou o do frontend como fallback
-      const buyerEmail = payment?.payer?.email || frontendEmail;
+      // 🔑 Usa apenas o e‑mail do Mercado Pago
+      const buyerEmail = payment?.payer?.email;
       if (!buyerEmail) {
         return res
           .status(400)
@@ -83,7 +82,7 @@ export default async function handler(req, res) {
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
-        secure: process.env.SMTP_PORT === "465", // ✅ ajusta conforme porta
+        secure: process.env.SMTP_PORT === "465",
         auth: {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
