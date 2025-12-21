@@ -53,7 +53,7 @@ export default function Home() {
 
       <button
         className={styles.button}
-        onClick={() => (window.location.href = "/checkout")}
+        onClick={() => (window.location.href = "/checkoutFront")}
       >
         {" "}
         Garantir acesso vitalício{" "}
