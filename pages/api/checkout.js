@@ -6,11 +6,9 @@ export default async function handler(req, res) {
     return res.status(405).end("Method Not Allowed");
   }
 
-  // Prefer the explicit MP_ACCESS_TOKEN name but fall back to the one pulled from Vercel
   const MP_TOKEN =
     process.env.MP_ACCESS_TOKEN || process.env.MERCADO_PAGO_ACCESS_TOKEN;
 
-  // Fail fast if no token is available
   if (!MP_TOKEN) {
     console.error("MP access token is not defined in environment variables");
     return res
@@ -19,7 +17,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Log only presence for debugging (never log the token value)
     console.log("TOKEN_PRESENT:", !!MP_TOKEN);
 
     const client = new MercadoPagoConfig({
@@ -28,7 +25,6 @@ export default async function handler(req, res) {
 
     const preference = new Preference(client);
 
-    // Use request body if provided, otherwise fall back to a safe default
     const items = (req.body && req.body.items) || [
       { title: "Develop +5TB de Cursos", unit_price: 19.9, quantity: 1 },
     ];
@@ -45,10 +41,13 @@ export default async function handler(req, res) {
             "https://unschematically-elective-danyell.ngrok-free.dev/pending",
         },
         auto_return: "approved",
+
+        // 🔑 Aqui está a linha nova:
+        notification_url:
+          "https://unschematically-elective-danyell.ngrok-free.dev/api/payment-webhook",
       },
     });
 
-    // Some SDK versions return the init point in different shapes; handle both
     const initPoint =
       response?.init_point ||
       response?.body?.init_point ||
@@ -64,7 +63,6 @@ export default async function handler(req, res) {
     return res.status(200).json({ url: initPoint });
   } catch (error) {
     console.error("Erro Mercado Pago:", error);
-    // Avoid leaking internal details to the client
     return res.status(500).json({ error: "Internal server error" });
   }
 }

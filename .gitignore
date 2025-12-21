@@ -6,3 +6,6 @@ sa-temp.json
 key-json/
 project.tar.gz
 .next/
+
+.vercel
+.env*.local
