@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     const preference = new Preference(client);
 
     const items = (req.body && req.body.items) || [
-      { title: "Develop +5TB de Cursos", unit_price: 19.9, quantity: 1 },
+      { title: "Develop +5TB de Cursos", unit_price: 1.5, quantity: 1 },
     ];
 
     const response = await preference.create({
