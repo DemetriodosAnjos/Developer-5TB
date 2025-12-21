@@ -2,7 +2,7 @@ body {
   margin: 0;
   padding: 0;
   background: linear-gradient(to bottom right, #380050, #000000);
-  color: #ffff;
+  color: #fff;
 }
 .container {
   font-family: Arial, sans-serif;
@@ -19,6 +19,23 @@ body {
   margin-bottom: 0;
 }
 
+.input {
+  padding: 12px;
+  font-size: 1.2rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
 .subtitle {
   display: flex;
   align-items: center;
@@ -28,9 +45,8 @@ body {
 }
 
 .subtitleText {
-  max-width: 320px;
-  font-size: 1.6rem;
   max-width: 480px;
+  font-size: 1.6rem;
 }
 
 .list {
@@ -84,4 +100,13 @@ body {
 
 .button:hover {
   background-color: #45a049;
+}
+
+@media (max-width: 600px) {
+  .title {
+    font-size: 3rem;
+  }
+  .priceText {
+    font-size: 2.5rem;
+  }
 }
