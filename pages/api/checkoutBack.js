@@ -38,7 +38,7 @@ export default async function handler(req, res) {
         {
           title: "Acesso ao material",
           quantity: 1,
-          unit_price: 0.43, // ✅ valor ajustado
+          unit_price: 0.6, // ✅ valor ajustado
         },
       ],
       external_reference,
