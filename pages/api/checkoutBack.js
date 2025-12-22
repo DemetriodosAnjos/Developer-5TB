@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       phone,
       status: "pending",
       external_reference,
-      amount: 0.43, // ✅ valor ajustado
+      amount: 0.51, // ✅ valor ajustado
       payment_method: "pix",
     });
 

@@ -34,7 +34,7 @@ export default function Home() {
           email,
           phone,
           external_reference: externalReference,
-          amount: 0.6,
+          amount: 0.51,
           description: "Acesso ao conteúdo exclusivo",
         }),
       });
@@ -77,7 +77,7 @@ export default function Home() {
 
       <div className={styles.price}>
         <p className={styles.textDescribe}>Por apenas</p>
-        <p className={styles.priceText}>R$ 0,60</p> {/* ✅ preço alinhado */}
+        <p className={styles.priceText}>R$ 0,51</p> {/* ✅ preço alinhado */}
       </div>
 
       {/* Mini Form */}
