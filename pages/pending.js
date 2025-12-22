@@ -7,15 +7,17 @@ import styles from "../styles/Home.module.css";
 export default function PendingPage() {
   const router = useRouter();
 
+  // Captura external_reference da URL
+  const externalReference =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("external_reference")
+      : null;
+
   // Polling automático para redirecionar quando status mudar
   useEffect(() => {
-    const externalReference = new URLSearchParams(window.location.search).get(
-      "external_reference"
-    );
+    if (!externalReference) return;
 
     const checkStatus = async () => {
-      if (!externalReference) return;
-
       const { data, error } = await supabasePublic
         .from("sales")
         .select("status")
@@ -35,13 +37,14 @@ export default function PendingPage() {
     checkStatus();
     const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
-  }, [router]);
+  }, [router, externalReference]);
 
   // Função do botão
   const handleLiberarAcesso = async () => {
-    const externalReference = new URLSearchParams(window.location.search).get(
-      "external_reference"
-    );
+    if (!externalReference) {
+      alert("External reference não encontrado na URL");
+      return;
+    }
 
     const { data, error } = await supabasePublic
       .from("sales")
@@ -59,7 +62,7 @@ export default function PendingPage() {
       await fetch("/api/send-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ externalReference }),
+        body: JSON.stringify({ externalReference }), // ← agora garantido
       });
 
       router.push("/success");
