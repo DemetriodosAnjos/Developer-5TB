@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       phone,
       status: "pending",
       external_reference,
-      amount: 0.43, // ✅ ajuste do valor
+      amount: 0.43, // ✅ valor ajustado
       payment_method: "pix",
     });
 
@@ -38,13 +38,13 @@ export default async function handler(req, res) {
         {
           title: "Acesso ao material",
           quantity: 1,
-          unit_price: 0.43, // ✅ ajuste do valor
+          unit_price: 0.43, // ✅ valor ajustado
         },
       ],
       external_reference,
       payer: { email },
       back_urls: {
-        success: "https://developer-5-tb.vercel.app/success",
+        success: "https://developer-5-tb.vercel.app/success", // ✅ ajuste
         failure: "https://developer-5-tb.vercel.app/failure",
         pending: "https://developer-5-tb.vercel.app/pending",
       },
