@@ -30,6 +30,11 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: "Webhook ignorado", type });
     }
 
+    // ✅ Intercepta o teste do Mercado Pago (id fictício)
+    if (paymentId === "123456") {
+      return res.status(200).json({ message: "Webhook de teste recebido" });
+    }
+
     // ✅ Se não houver paymentId, retorna erro
     if (!paymentId) {
       return res.status(400).json({ error: "paymentId não encontrado" });
