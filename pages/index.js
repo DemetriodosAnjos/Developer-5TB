@@ -14,15 +14,18 @@ export default function Home() {
   const handleCheckout = async () => {
     setLoading(true);
 
-    // ✅ Validação antes de enviar
     if (!name || !emailRegex.test(email)) {
       alert("Preencha nome e um e‑mail válido");
       setLoading(false);
       return;
     }
+    if (!phone) {
+      alert("Informe um número de WhatsApp válido");
+      setLoading(false);
+      return;
+    }
 
     try {
-      // Chama a API backend para criar a preferência no Mercado Pago
       const res = await fetch("/api/checkoutBack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,7 +33,7 @@ export default function Home() {
           name,
           email,
           phone,
-          amount: 0.51,
+          amount: 0.57,
           description: "Acesso ao conteúdo exclusivo",
         }),
       });
@@ -38,9 +41,9 @@ export default function Home() {
       const data = await res.json();
 
       if (res.ok && data.id) {
-        // ✅ monta a URL com o id da preferência
         window.location.href = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${data.id}`;
       } else {
+        console.error("Erro backend:", data);
         alert("Erro ao iniciar pagamento");
       }
     } catch (err) {
@@ -73,7 +76,7 @@ export default function Home() {
 
       <div className={styles.price}>
         <p className={styles.textDescribe}>Por apenas</p>
-        <p className={styles.priceText}>R$ 0,51</p> {/* ✅ preço alinhado */}
+        <p className={styles.priceText}>R$ 0,57</p> {/* ✅ preço alinhado */}
       </div>
 
       {/* Mini Form */}

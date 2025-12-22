@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       phone,
       status: "pending",
       external_reference,
-      amount: 0.51, // valor alinhado
+      amount: 0.57,
       payment_method: "pix",
     });
 
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
         {
           title: "Acesso ao material",
           quantity: 1,
-          unit_price: 0.51,
+          unit_price: 0.57,
         },
       ],
       external_reference,
