@@ -102,7 +102,7 @@ export default function PendingPage() {
           marginTop: "20px",
         }}
       >
-        Liberar acesso Vitalício
+        Conferir status de pagamento
       </button>
     </div>
   );
