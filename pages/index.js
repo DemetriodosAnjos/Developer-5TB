@@ -88,7 +88,7 @@ export default function Home() {
 
       <div className={styles.price}>
         <p className={styles.textDescribe}>Por apenas</p>
-        <p className={styles.priceText}>R$ 0,48</p>
+        <p className={styles.priceText}>R$ 0,45</p>
       </div>
 
       {/* Mini Form */}

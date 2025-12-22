@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     const { type, data } = req.body || {};
     const paymentId = data?.id;
 
-    console.log("Webhook recebido:", req.body);
+    console.log("Webhook recebido:", JSON.stringify(req.body, null, 2));
 
     if (type !== "payment") {
       return res.status(200).json({ message: "Webhook ignorado", type });
@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     let payment;
     try {
       payment = await paymentClient.get({ id: paymentId });
-      console.log("Detalhes do pagamento:", payment);
+      console.log("Detalhes do pagamento:", JSON.stringify(payment, null, 2));
     } catch (err) {
       console.error("Erro ao consultar pagamento:", err);
       return res.status(500).json({ error: "Falha ao consultar pagamento" });
@@ -42,19 +42,27 @@ export default async function handler(req, res) {
     console.log(
       "Status do pagamento:",
       payment?.status,
-      "Ref:",
+      "ExternalRef:",
       externalReference
     );
 
     // ✅ Atualiza status no Supabase
     if (externalReference) {
-      await supabase
+      const { error } = await supabase
         .from("sales")
         .update({ status: payment?.status })
         .eq("external_reference", externalReference);
-      console.log(`Status atualizado no Supabase para ${payment?.status}`);
+
+      if (error) {
+        console.error("Erro ao atualizar Supabase:", error);
+      } else {
+        console.log(`Status atualizado no Supabase para ${payment?.status}`);
+      }
+    } else {
+      console.warn("Webhook recebido sem external_reference");
     }
 
+    // ✅ Tratamento de status
     if (payment?.status === "approved") {
       const buyerEmail = payment?.payer?.email;
       if (!buyerEmail) {
@@ -63,7 +71,30 @@ export default async function handler(req, res) {
           .json({ error: "Email do comprador não encontrado" });
       }
 
-      // ... (Google Drive + envio de e‑mail como já está no seu código)
+      // Exemplo de envio de e-mail (mantém seu fluxo atual)
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        secure: process.env.SMTP_PORT === "465",
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+
+      await transporter.sendMail({
+        from: `"Suporte Developer 5TB" <${process.env.SMTP_USER}>`,
+        to: buyerEmail,
+        subject: "Seu acesso ao material foi liberado 🎉",
+        html: `
+          <h2>Parabéns, seu pagamento foi aprovado!</h2>
+          <p>Segue o link para acessar seu material:</p>
+          <p><a href="${process.env.DOWNLOAD_LINK}" target="_blank">Clique aqui para baixar</a></p>
+          <p>Obrigado pela confiança e bons estudos 🚀</p>
+        `,
+      });
+
+      console.log(`E‑mail enviado para ${buyerEmail}`);
 
       return res.status(200).json({
         ok: true,
