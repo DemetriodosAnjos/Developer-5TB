@@ -1,56 +1,58 @@
 // pages/pending.js
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { supabasePublic } from "../lib/supabaseClient";
+import styles from "../styles/Home.module.css";
 
 export default function PendingPage() {
-  const [loading, setLoading] = useState(true);
-
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 2000);
-    return () => clearTimeout(timer);
+    const externalReference = new URLSearchParams(window.location.search).get(
+      "external_reference"
+    );
+
+    const interval = setInterval(async () => {
+      if (!externalReference) return;
+
+      const { data } = await supabasePublic
+        .from("sales")
+        .select("status")
+        .eq("external_reference", externalReference)
+        .single();
+
+      if (data?.status === "approved") {
+        window.location.href = "/success";
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   return (
-    <div>
-      {loading ? (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            backgroundColor: "rgba(0,0,0,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <p style={{ color: "#fff", fontSize: "20px" }}>
-            ⏳ Confirmando pagamento...
-          </p>
-        </div>
-      ) : (
-        <div
-          style={{
-            textAlign: "center",
-            marginTop: "80px",
-            fontFamily: "Arial, sans-serif",
-          }}
-        >
-          <h1 style={{ color: "#f9a825" }}>⏳ Pagamento em análise</h1>
-          <h2>Seu pagamento ainda não foi confirmado</h2>
-          <p>
-            Assim que for aprovado, você receberá o link de acesso em seu
-            e‑mail.
-          </p>
-          <a
-            href="https://developer-5-tb.vercel.app"
-            style={{ color: "#1976d2" }}
-          >
-            Voltar à loja
-          </a>
-        </div>
-      )}
+    <div className={styles.container}>
+      <h1 className={styles.title}>Pagamento em processamento ⏳</h1>
+      <div className={styles.subtitle}>
+        <p className={styles.subtitleText}>
+          Seu pagamento via Pix foi iniciado e está sendo processado.
+        </p>
+      </div>
+
+      <div className={styles.loader}>
+        <p className={styles.textDescribe}>
+          Assim que o Mercado Pago confirmar o pagamento, você receberá um
+          e‑mail com o link de acesso ao conteúdo.
+        </p>
+      </div>
+
+      <ul className={styles.list}>
+        <li>
+          ✅ Não feche esta página até concluir o pagamento no app do seu banco.
+        </li>
+        <li>✅ O processo pode levar alguns segundos.</li>
+        <li>✅ Você receberá o e‑mail automaticamente após a aprovação.</li>
+      </ul>
+
+      <div className={styles.price}>
+        <p className={styles.textDescribe}>Obrigado pela confiança 🚀</p>
+      </div>
     </div>
   );
 }

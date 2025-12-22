@@ -68,8 +68,12 @@ export default async function handler(req, res) {
 
     // ✅ Tratamento de status
     if (status === "approved") {
+      let buyerEmail;
+
       // Primeiro tenta pegar do Mercado Pago
-      let buyerEmail = payment?.payer?.email;
+      if (payment?.payer?.email) {
+        buyerEmail = payment.payer.email;
+      }
 
       // Se não veio, busca no Supabase pelo external_reference
       if (!buyerEmail && externalReference) {
