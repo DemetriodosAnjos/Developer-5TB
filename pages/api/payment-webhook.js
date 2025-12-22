@@ -32,69 +32,85 @@ export default async function handler(req, res) {
     let payment;
     try {
       payment = await paymentClient.get({ id: paymentId });
-      console.log("Detalhes do pagamento:", JSON.stringify(payment, null, 2));
+      console.log(
+        "Detalhes do pagamento consultado:",
+        JSON.stringify(payment, null, 2)
+      );
     } catch (err) {
       console.error("Erro ao consultar pagamento:", err);
       return res.status(500).json({ error: "Falha ao consultar pagamento" });
     }
 
     const externalReference = payment?.external_reference;
+    const status = payment?.status;
     console.log(
       "Status do pagamento:",
-      payment?.status,
+      status,
       "ExternalRef:",
       externalReference
     );
 
     // ✅ Atualiza status no Supabase
     if (externalReference) {
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from("sales")
-        .update({ status: payment?.status })
+        .update({ status })
         .eq("external_reference", externalReference);
 
       if (error) {
         console.error("Erro ao atualizar Supabase:", error);
+      } else if (!data || data.length === 0) {
+        console.warn(
+          "Nenhum registro encontrado para external_reference:",
+          externalReference
+        );
       } else {
-        console.log(`Status atualizado no Supabase para ${payment?.status}`);
+        console.log(`Status atualizado no Supabase para ${status}`);
       }
     } else {
       console.warn("Webhook recebido sem external_reference");
     }
 
     // ✅ Tratamento de status
-    if (payment?.status === "approved") {
+    if (status === "approved") {
       const buyerEmail = payment?.payer?.email;
       if (!buyerEmail) {
+        console.error(
+          "Email do comprador não encontrado no pagamento:",
+          payment?.payer
+        );
         return res
           .status(400)
           .json({ error: "Email do comprador não encontrado" });
       }
 
-      // Exemplo de envio de e-mail (mantém seu fluxo atual)
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: process.env.SMTP_PORT === "465",
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
+      try {
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: process.env.SMTP_PORT,
+          secure: process.env.SMTP_PORT === "465",
+          auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+        });
 
-      await transporter.sendMail({
-        from: `"Suporte Developer 5TB" <${process.env.SMTP_USER}>`,
-        to: buyerEmail,
-        subject: "Seu acesso ao material foi liberado 🎉",
-        html: `
-          <h2>Parabéns, seu pagamento foi aprovado!</h2>
-          <p>Segue o link para acessar seu material:</p>
-          <p><a href="${process.env.DOWNLOAD_LINK}" target="_blank">Clique aqui para baixar</a></p>
-          <p>Obrigado pela confiança e bons estudos 🚀</p>
-        `,
-      });
+        await transporter.sendMail({
+          from: `"Suporte Developer 5TB" <${process.env.SMTP_USER}>`,
+          to: buyerEmail,
+          subject: "Seu acesso ao material foi liberado 🎉",
+          html: `
+            <h2>Parabéns, seu pagamento foi aprovado!</h2>
+            <p>Segue o link para acessar seu material:</p>
+            <p><a href="${process.env.DOWNLOAD_LINK}" target="_blank">Clique aqui para baixar</a></p>
+            <p>Obrigado pela confiança e bons estudos 🚀</p>
+          `,
+        });
 
-      console.log(`E‑mail enviado para ${buyerEmail}`);
+        console.log(`E‑mail enviado para ${buyerEmail}`);
+      } catch (mailErr) {
+        console.error("Erro ao enviar e‑mail:", mailErr);
+      }
 
       return res.status(200).json({
         ok: true,
@@ -102,17 +118,10 @@ export default async function handler(req, res) {
         email: buyerEmail,
         message: "Pagamento aprovado. Acesso liberado e e‑mail enviado.",
       });
-    } else if (
-      payment?.status === "pending" ||
-      payment?.status === "in_process"
-    ) {
-      return res
-        .status(200)
-        .json({ message: "Pagamento pendente", status: payment?.status });
+    } else if (status === "pending" || status === "in_process") {
+      return res.status(200).json({ message: "Pagamento pendente", status });
     } else {
-      return res
-        .status(200)
-        .json({ message: "Pagamento rejeitado", status: payment?.status });
+      return res.status(200).json({ message: "Pagamento rejeitado", status });
     }
   } catch (err) {
     console.error("Erro no webhook:", err);

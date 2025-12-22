@@ -27,7 +27,7 @@ export default function Home() {
         phone,
         status: "pending",
         external_reference: externalReference,
-        amount: 0.5,
+        amount: 0.45,
         payment_method: "pix",
       },
     ]);
