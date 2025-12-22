@@ -1,30 +1,72 @@
 // pages/pending.js
 import { useEffect } from "react";
 import { supabasePublic } from "../lib/supabaseClient";
+import { useRouter } from "next/router";
 import styles from "../styles/Home.module.css";
 
 export default function PendingPage() {
+  const router = useRouter();
+
+  // Polling automático para redirecionar quando status mudar
   useEffect(() => {
     const externalReference = new URLSearchParams(window.location.search).get(
       "external_reference"
     );
 
-    const interval = setInterval(async () => {
+    const checkStatus = async () => {
       if (!externalReference) return;
 
-      const { data } = await supabasePublic
+      const { data, error } = await supabasePublic
         .from("sales")
         .select("status")
         .eq("external_reference", externalReference)
         .single();
 
-      if (data?.status === "approved") {
-        window.location.href = "/success";
+      if (error) {
+        console.error("Erro ao consultar Supabase:", error);
+        return;
       }
-    }, 5000);
 
+      if (data?.status === "approved") {
+        router.push("/success");
+      }
+    };
+
+    checkStatus();
+    const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [router]);
+
+  // Função do botão
+  const handleLiberarAcesso = async () => {
+    const externalReference = new URLSearchParams(window.location.search).get(
+      "external_reference"
+    );
+
+    const { data, error } = await supabasePublic
+      .from("sales")
+      .select("status")
+      .eq("external_reference", externalReference)
+      .single();
+
+    if (error) {
+      console.error("Erro ao consultar Supabase:", error);
+      return;
+    }
+
+    if (data?.status === "approved") {
+      // Dispara e‑mail via API
+      await fetch("/api/send-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ externalReference }),
+      });
+
+      router.push("/success");
+    } else {
+      alert("Pagamento ainda em processamento. Aguarde alguns segundos.");
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -37,8 +79,8 @@ export default function PendingPage() {
 
       <div className={styles.loader}>
         <p className={styles.textDescribe}>
-          Assim que o Mercado Pago confirmar o pagamento, você receberá um
-          e‑mail com o link de acesso ao conteúdo.
+          Assim que o Mercado Pago confirmar o pagamento, você será
+          redirecionado automaticamente.
         </p>
       </div>
 
@@ -53,6 +95,23 @@ export default function PendingPage() {
       <div className={styles.price}>
         <p className={styles.textDescribe}>Obrigado pela confiança 🚀</p>
       </div>
+
+      {/* Botão manual */}
+      <button
+        onClick={handleLiberarAcesso}
+        style={{
+          backgroundColor: "#1976d2",
+          color: "#fff",
+          padding: "12px 24px",
+          borderRadius: "6px",
+          border: "none",
+          cursor: "pointer",
+          fontSize: "16px",
+          marginTop: "20px",
+        }}
+      >
+        Liberar acesso Vitalício
+      </button>
     </div>
   );
 }

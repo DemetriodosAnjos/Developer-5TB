@@ -2,6 +2,32 @@
 import nodemailer from "nodemailer";
 import { supabaseAdmin } from "../../lib/supabaseClient";
 
+async function sendAccessEmail(buyerEmail) {
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: process.env.SMTP_PORT === "465",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `"Suporte Developer 5TB" <${process.env.SMTP_USER}>`,
+    to: buyerEmail,
+    subject: "Seu acesso ao material foi liberado 🎉",
+    html: `
+      <h2>Parabéns, seu pagamento foi aprovado!</h2>
+      <p>Segue o link para acessar seu material:</p>
+      <p><a href="${process.env.DOWNLOAD_LINK}" target="_blank">Clique aqui para baixar</a></p>
+      <p>Obrigado pela confiança e bons estudos 🚀</p>
+    `,
+  });
+
+  console.log(`E‑mail enviado para ${buyerEmail}`);
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Use POST" });
@@ -68,14 +94,9 @@ export default async function handler(req, res) {
 
     // ✅ Tratamento de status
     if (status === "approved") {
-      let buyerEmail;
+      let buyerEmail = payment?.payer?.email;
 
-      // Primeiro tenta pegar do Mercado Pago
-      if (payment?.payer?.email) {
-        buyerEmail = payment.payer.email;
-      }
-
-      // Se não veio, busca no Supabase pelo external_reference
+      // Se não veio do Mercado Pago, busca no Supabase
       if (!buyerEmail && externalReference) {
         const { data: sale, error: saleError } = await supabaseAdmin
           .from("sales")
@@ -95,31 +116,10 @@ export default async function handler(req, res) {
       }
 
       try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST,
-          port: process.env.SMTP_PORT,
-          secure: process.env.SMTP_PORT === "465",
-          auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-          },
-        });
-
-        await transporter.sendMail({
-          from: `"Suporte Developer 5TB" <${process.env.SMTP_USER}>`,
-          to: buyerEmail,
-          subject: "Seu acesso ao material foi liberado 🎉",
-          html: `
-            <h2>Parabéns, seu pagamento foi aprovado!</h2>
-            <p>Segue o link para acessar seu material:</p>
-            <p><a href="${process.env.DOWNLOAD_LINK}" target="_blank">Clique aqui para baixar</a></p>
-            <p>Obrigado pela confiança e bons estudos 🚀</p>
-          `,
-        });
-
-        console.log(`E‑mail enviado para ${buyerEmail}`);
+        await sendAccessEmail(buyerEmail);
       } catch (mailErr) {
         console.error("Erro ao enviar e‑mail:", mailErr);
+        return res.status(500).json({ error: "Falha ao enviar e‑mail" });
       }
 
       return res.status(200).json({
@@ -128,11 +128,13 @@ export default async function handler(req, res) {
         email: buyerEmail,
         message: "Pagamento aprovado. Acesso liberado e e‑mail enviado.",
       });
-    } else if (status === "pending" || status === "in_process") {
-      return res.status(200).json({ message: "Pagamento pendente", status });
-    } else {
-      return res.status(200).json({ message: "Pagamento rejeitado", status });
     }
+
+    if (status === "pending" || status === "in_process") {
+      return res.status(200).json({ message: "Pagamento pendente", status });
+    }
+
+    return res.status(200).json({ message: "Pagamento rejeitado", status });
   } catch (err) {
     console.error("Erro no webhook:", err);
     return res
