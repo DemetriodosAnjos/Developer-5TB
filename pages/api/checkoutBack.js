@@ -23,7 +23,7 @@ export default async function handler(req, res) {
           {
             title: description || "Acesso ao conteúdo exclusivo",
             quantity: 1,
-            unit_price: amount || 0.5,
+            unit_price: amount || 0.49,
             currency_id: "BRL",
           },
         ],
