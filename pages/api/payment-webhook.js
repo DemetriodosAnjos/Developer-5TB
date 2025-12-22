@@ -50,20 +50,15 @@ export default async function handler(req, res) {
       externalReference
     );
 
-    // ✅ Atualiza status no Supabase usando cliente admin
+    // ✅ Atualiza status no Supabase
     if (externalReference) {
-      const { error, data } = await supabaseAdmin
+      const { error } = await supabaseAdmin
         .from("sales")
         .update({ status })
         .eq("external_reference", externalReference);
 
       if (error) {
         console.error("Erro ao atualizar Supabase:", error);
-      } else if (!data || data.length === 0) {
-        console.warn(
-          "Nenhum registro encontrado para external_reference:",
-          externalReference
-        );
       } else {
         console.log(`Status atualizado no Supabase para ${status}`);
       }
@@ -73,15 +68,26 @@ export default async function handler(req, res) {
 
     // ✅ Tratamento de status
     if (status === "approved") {
-      const buyerEmail = payment?.payer?.email;
+      // Primeiro tenta pegar do Mercado Pago
+      let buyerEmail = payment?.payer?.email;
+
+      // Se não veio, busca no Supabase pelo external_reference
+      if (!buyerEmail && externalReference) {
+        const { data: sale, error: saleError } = await supabaseAdmin
+          .from("sales")
+          .select("email")
+          .eq("external_reference", externalReference)
+          .single();
+
+        if (saleError) {
+          console.error("Erro ao buscar e‑mail no Supabase:", saleError);
+        }
+        buyerEmail = sale?.email;
+      }
+
       if (!buyerEmail) {
-        console.error(
-          "Email do comprador não encontrado no pagamento:",
-          payment?.payer
-        );
-        return res
-          .status(400)
-          .json({ error: "Email do comprador não encontrado" });
+        console.error("Nenhum e‑mail encontrado para envio");
+        return res.status(400).json({ error: "E‑mail não encontrado" });
       }
 
       try {
