@@ -16,34 +16,45 @@ export default async function handler(req, res) {
     });
     const preferenceClient = new Preference(client);
 
-    const { name, email, phone } = req.body;
+    const { name, email, phone, description } = req.body;
 
     // ✅ Gera referência única
     const external_reference = uuidv4();
 
-    // ✅ Salva no Supabase com email e status pending
-    const { error } = await supabase.from("sales").insert({
-      name,
-      email,
-      phone,
-      status: "pending",
-      external_reference,
-      amount: 0.57,
-      payment_method: "pix",
-    });
+    // ✅ Define preço fixo no backend
+    const fixedAmount = 0.58;
+
+    // ✅ Salva no Supabase
+    const { data, error } = await supabase.from("sales").insert([
+      {
+        name,
+        email,
+        phone,
+        status: "pending",
+        external_reference,
+        amount: fixedAmount,
+        payment_method: "pix",
+      },
+    ]);
 
     if (error) {
       console.error("Erro ao salvar no Supabase:", error);
       return res.status(500).json({ error: "Falha ao salvar no Supabase" });
     }
 
+    console.log("Registro criado no Supabase:", {
+      external_reference,
+      email,
+      id: data?.[0]?.id,
+    });
+
     // ✅ Cria preferência no Mercado Pago
     const preference = {
       items: [
         {
-          title: "Acesso ao material",
+          title: description || "Acesso ao material",
           quantity: 1,
-          unit_price: 0.57,
+          unit_price: fixedAmount,
         },
       ],
       external_reference,
@@ -56,13 +67,12 @@ export default async function handler(req, res) {
       auto_return: "approved",
       payment_methods: {
         excluded_payment_types: [{ id: "credit_card" }, { id: "ticket" }],
-        default_payment_method_id: "pix", // força PIX como padrão
+        default_payment_method_id: "pix",
       },
     };
 
     const result = await preferenceClient.create({ body: preference });
 
-    // ✅ Retorna id da preferência para o frontend
     return res.status(200).json({ id: result.id });
   } catch (err) {
     console.error("Erro no checkoutBack:", err);
