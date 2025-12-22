@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import styles from "../styles/Home.module.css";
 
 export default function Home() {
@@ -23,8 +22,6 @@ export default function Home() {
     }
 
     try {
-      const externalReference = uuidv4();
-
       // Chama a API backend para criar a preferência no Mercado Pago
       const res = await fetch("/api/checkoutBack", {
         method: "POST",
@@ -33,7 +30,6 @@ export default function Home() {
           name,
           email,
           phone,
-          external_reference: externalReference,
           amount: 0.51,
           description: "Acesso ao conteúdo exclusivo",
         }),
