@@ -12,6 +12,8 @@ export default async function handler(req, res) {
         .json({ error: "MERCADO_PAGO_ACCESS_TOKEN não configurado" });
     }
 
+    const { external_reference, amount, description } = req.body;
+
     const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
     const preference = new Preference(client);
 
@@ -19,13 +21,13 @@ export default async function handler(req, res) {
       body: {
         items: [
           {
-            title: "Acesso ao conteúdo exclusivo",
+            title: description || "Acesso ao conteúdo exclusivo",
             quantity: 1,
-            unit_price: 0.5,
+            unit_price: amount || 0.5,
             currency_id: "BRL",
           },
         ],
-
+        external_reference, // 🔑 vincula com Supabase
         back_urls: {
           success: "https://developer-5-tb.vercel.app/success",
           failure: "https://developer-5-tb.vercel.app/failure",
