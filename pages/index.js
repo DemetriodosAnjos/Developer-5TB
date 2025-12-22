@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { supabase } from "../lib/supabaseClient";
 import { v4 as uuidv4 } from "uuid";
 import styles from "../styles/Home.module.css";
 
@@ -16,34 +15,24 @@ export default function Home() {
   const handleCheckout = async () => {
     setLoading(true);
 
-    // Gera external_reference único
-    const externalReference = uuidv4();
-
-    // Salva os dados no Supabase
-    const { error } = await supabase.from("sales").insert([
-      {
-        name,
-        email,
-        phone,
-        status: "pending",
-        external_reference: externalReference,
-        amount: 0.43,
-        payment_method: "pix",
-      },
-    ]);
-
-    if (error) {
-      console.error("Erro ao salvar no Supabase:", error);
+    // ✅ Validação antes de enviar
+    if (!name || !emailRegex.test(email)) {
+      alert("Preencha nome e um e‑mail válido");
       setLoading(false);
       return;
     }
 
     try {
+      const externalReference = uuidv4();
+
       // Chama a API backend para criar a preferência no Mercado Pago
       const res = await fetch("/api/checkoutBack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name,
+          email,
+          phone,
           external_reference: externalReference,
           amount: 0.43,
           description: "Acesso ao conteúdo exclusivo",
@@ -52,9 +41,9 @@ export default function Home() {
 
       const data = await res.json();
 
-      if (res.ok && data.url) {
-        // Redireciona para o checkout
-        window.location.href = data.url;
+      if (res.ok && data.id) {
+        // ✅ monta a URL com o id da preferência
+        window.location.href = `https://www.mercadopago.com.br/checkout/v1/redirect?pref_id=${data.id}`;
       } else {
         alert("Erro ao iniciar pagamento");
       }
@@ -88,7 +77,7 @@ export default function Home() {
 
       <div className={styles.price}>
         <p className={styles.textDescribe}>Por apenas</p>
-        <p className={styles.priceText}>R$ 0,45</p>
+        <p className={styles.priceText}>R$ 0,43</p> {/* ✅ preço alinhado */}
       </div>
 
       {/* Mini Form */}
