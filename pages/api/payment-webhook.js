@@ -44,6 +44,7 @@ export default async function handler(req, res) {
     try {
       // ✅ Consulta os detalhes do pagamento no Mercado Pago usando o ID recebido
       payment = await paymentClient.get({ id: paymentId });
+      console.log("Detalhes do pagamento:", payment);
     } catch (err) {
       console.error("Erro ao consultar pagamento:", err);
       return res.status(500).json({ error: "Falha ao consultar pagamento" });
