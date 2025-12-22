@@ -45,7 +45,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           external_reference: externalReference,
-          amount: 0.5,
+          amount: 0.45,
           description: "Acesso ao conteúdo exclusivo",
         }),
       });
