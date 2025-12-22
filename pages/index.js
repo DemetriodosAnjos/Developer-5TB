@@ -27,7 +27,7 @@ export default function Home() {
         phone,
         status: "pending",
         external_reference: externalReference,
-        amount: 0.45,
+        amount: 0.43,
         payment_method: "pix",
       },
     ]);
@@ -45,7 +45,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           external_reference: externalReference,
-          amount: 0.45,
+          amount: 0.43,
           description: "Acesso ao conteúdo exclusivo",
         }),
       });

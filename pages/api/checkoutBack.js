@@ -1,47 +1,63 @@
 // pages/api/checkoutBack.js
-import { MercadoPagoConfig, Preference } from "mercadopago";
+import { v4 as uuidv4 } from "uuid";
+import { supabase } from "../../lib/supabaseClient";
 
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Use POST" });
+  }
 
   try {
-    const MP_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN;
-    if (!MP_TOKEN) {
-      return res
-        .status(500)
-        .json({ error: "MERCADO_PAGO_ACCESS_TOKEN não configurado" });
-    }
+    const mpModule = await import("mercadopago");
+    const { MercadoPagoConfig, Preference } = mpModule;
 
-    const { external_reference, amount, description } = req.body;
+    const client = new MercadoPagoConfig({
+      accessToken: process.env.MERCADO_PAGO_ACCESS_TOKEN,
+    });
+    const preferenceClient = new Preference(client);
 
-    const client = new MercadoPagoConfig({ accessToken: MP_TOKEN });
-    const preference = new Preference(client);
+    const { name, email, phone } = req.body;
 
-    const response = await preference.create({
-      body: {
-        items: [
-          {
-            title: description || "Acesso ao conteúdo exclusivo",
-            quantity: 1,
-            unit_price: amount || 0.45,
-            currency_id: "BRL",
-          },
-        ],
-        external_reference, // 🔑 vincula com Supabase
-        back_urls: {
-          success: "https://developer-5-tb.vercel.app/success",
-          failure: "https://developer-5-tb.vercel.app/failure",
-          pending: "https://developer-5-tb.vercel.app/pending",
-        },
-        auto_return: "approved",
-        notification_url:
-          "https://developer-5-tb.vercel.app/api/payment-webhook",
-      },
+    // Gera referência única
+    const external_reference = uuidv4();
+
+    // Salva no Supabase como pending
+    await supabase.from("sales").insert({
+      name,
+      email,
+      phone,
+      status: "pending",
+      external_reference,
+      amount: 0.43, // ✅ ajuste do valor
+      payment_method: "pix",
     });
 
-    return res.status(200).json({ url: response.init_point, id: response.id });
+    // Cria preferência no Mercado Pago
+    const preference = {
+      items: [
+        {
+          title: "Acesso ao material",
+          quantity: 1,
+          unit_price: 0.43, // ✅ ajuste do valor
+        },
+      ],
+      external_reference,
+      payer: { email },
+      back_urls: {
+        success: "https://developer-5-tb.vercel.app/success",
+        failure: "https://developer-5-tb.vercel.app/failure",
+        pending: "https://developer-5-tb.vercel.app/pending",
+      },
+      auto_return: "approved",
+    };
+
+    const result = await preferenceClient.create({ body: preference });
+
+    return res.status(200).json({ id: result.id });
   } catch (err) {
-    console.error("Erro no checkout:", err);
-    return res.status(500).json({ error: "Erro interno no servidor" });
+    console.error("Erro no checkoutBack:", err);
+    return res
+      .status(500)
+      .json({ error: "Erro interno", details: err.message });
   }
 }
