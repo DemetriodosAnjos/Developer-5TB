@@ -4,9 +4,9 @@ import { supabaseAdmin } from "../../lib/supabaseClient";
 
 async function sendAccessEmail(buyerEmail) {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: process.env.SMTP_PORT,
-    secure: process.env.SMTP_PORT === "465",
+    host: process.env.SMTP_HOST, // smtp.gmail.com
+    port: parseInt(process.env.SMTP_PORT, 10), // converte para número
+    secure: parseInt(process.env.SMTP_PORT, 10) === 465, // true se porta 465, false se 587
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
