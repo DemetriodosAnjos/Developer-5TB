@@ -75,7 +75,7 @@ export default function Home() {
 
       <div className={styles.price}>
         <p className={styles.textDescribe}>Por apenas</p>
-        <p className={styles.priceText}>R$ 0,99</p> {/* ✅ preço alinhado */}
+        <p className={styles.priceText}>R$ 0,97</p> {/* ✅ preço alinhado */}
       </div>
 
       {/* Mini Form */}

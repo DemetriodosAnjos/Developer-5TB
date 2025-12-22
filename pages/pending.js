@@ -1,11 +1,12 @@
 // pages/pending.js
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabasePublic } from "../lib/supabaseClient";
 import { useRouter } from "next/router";
 import styles from "../styles/Home.module.css";
 
 export default function PendingPage() {
   const router = useRouter();
+  const [status, setStatus] = useState("pending");
 
   // Captura external_reference da URL
   const externalReference =
@@ -13,11 +14,27 @@ export default function PendingPage() {
       ? new URLSearchParams(window.location.search).get("external_reference")
       : null;
 
-  // Polling automático para redirecionar quando status mudar
-  useEffect(() => {
-    if (!externalReference) return;
+  // Proteção contra variáveis faltando
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    console.error("Supabase não configurado corretamente");
+    return (
+      <div className={styles.container}>
+        <h1 className={styles.title}>Erro de configuração</h1>
+        <p className={styles.textDescribe}>
+          Supabase não inicializado. Verifique variáveis de ambiente.
+        </p>
+      </div>
+    );
+  }
 
+  // Consulta status sem redirecionar automático
+  useEffect(() => {
     const checkStatus = async () => {
+      if (!externalReference) return;
+
       const { data, error } = await supabasePublic
         .from("sales")
         .select("status")
@@ -29,15 +46,15 @@ export default function PendingPage() {
         return;
       }
 
-      if (data?.status === "approved") {
-        router.push("/success");
+      if (data?.status) {
+        setStatus(data.status);
       }
     };
 
     checkStatus();
     const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
-  }, [router, externalReference]);
+  }, [externalReference]);
 
   // Função do botão
   const handleLiberarAcesso = async () => {
@@ -46,23 +63,12 @@ export default function PendingPage() {
       return;
     }
 
-    const { data, error } = await supabasePublic
-      .from("sales")
-      .select("status")
-      .eq("external_reference", externalReference)
-      .single();
-
-    if (error) {
-      console.error("Erro ao consultar Supabase:", error);
-      return;
-    }
-
-    if (data?.status === "approved") {
+    if (status === "approved") {
       // Dispara e‑mail via API
       await fetch("/api/send-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ externalReference }), // ← agora garantido
+        body: JSON.stringify({ externalReference }),
       });
 
       router.push("/success");
@@ -74,32 +80,15 @@ export default function PendingPage() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Pagamento em processamento ⏳</h1>
-      <div className={styles.subtitle}>
-        <p className={styles.subtitleText}>
-          Seu pagamento via Pix foi iniciado e está sendo processado.
-        </p>
-      </div>
+      <p className={styles.subtitleText}>
+        Status atual: <strong>{status}</strong>
+      </p>
 
-      <div className={styles.loader}>
-        <p className={styles.textDescribe}>
-          Assim que o Mercado Pago confirmar o pagamento, você será
-          redirecionado automaticamente.
-        </p>
-      </div>
+      <p className={styles.textDescribe}>
+        Assim que o Mercado Pago confirmar o pagamento, você poderá liberar o
+        acesso manualmente.
+      </p>
 
-      <ul className={styles.list}>
-        <li>
-          ✅ Não feche esta página até concluir o pagamento no app do seu banco.
-        </li>
-        <li>✅ O processo pode levar alguns segundos.</li>
-        <li>✅ Você receberá o e‑mail automaticamente após a aprovação.</li>
-      </ul>
-
-      <div className={styles.price}>
-        <p className={styles.textDescribe}>Obrigado pela confiança 🚀</p>
-      </div>
-
-      {/* Botão manual */}
       <button
         onClick={handleLiberarAcesso}
         style={{
