@@ -1,6 +1,6 @@
 // pages/api/checkoutBack.js
 import { v4 as uuidv4 } from "uuid";
-import { supabase } from "../../lib/supabaseClient";
+import { supabaseAdmin } from "../../lib/supabaseClient";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -22,10 +22,10 @@ export default async function handler(req, res) {
     const external_reference = uuidv4();
 
     // ✅ Define preço fixo no backend
-    const fixedAmount = 0.58;
+    const fixedAmount = 0.54;
 
-    // ✅ Salva no Supabase
-    const { data, error } = await supabase.from("sales").insert([
+    // ✅ Salva no Supabase usando o cliente admin
+    const { data, error } = await supabaseAdmin.from("sales").insert([
       {
         name,
         email,
