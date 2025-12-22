@@ -1,6 +1,6 @@
 // pages/api/payment-webhook.js
 import nodemailer from "nodemailer";
-import { supabase } from "../../lib/supabaseClient";
+import { supabaseAdmin } from "../../lib/supabaseClient";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -50,9 +50,9 @@ export default async function handler(req, res) {
       externalReference
     );
 
-    // ✅ Atualiza status no Supabase
+    // ✅ Atualiza status no Supabase usando cliente admin
     if (externalReference) {
-      const { error, data } = await supabase
+      const { error, data } = await supabaseAdmin
         .from("sales")
         .update({ status })
         .eq("external_reference", externalReference);
