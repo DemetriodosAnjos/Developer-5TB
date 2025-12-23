@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabasePublic } from "../lib/supabaseClient";
 import { useRouter } from "next/router";
-import styles from "../styles/pending.module.css";
+import styles from "../styles/Pending.module.css";
+console.log("Styles carregado:", styles);
 
 export default function PendingPage() {
   const router = useRouter();
@@ -10,16 +11,18 @@ export default function PendingPage() {
   const externalReference =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("external_reference")
-      : null;
+      : "mock-reference";
 
   // Verifica se o client foi criado corretamente
   if (!supabasePublic) {
     return (
       <div className={styles.container}>
-        <h1 className={styles.title}>Erro de inicialização</h1>
-        <p className={styles.textDescribe}>
-          Supabase client não foi carregado. Verifique variáveis de ambiente.
-        </p>
+        <div className={styles.modal}>
+          <h1 className={styles.title}>Erro de inicialização</h1>
+          <p className={styles.textDescribe}>
+            Supabase client não foi carregado. Verifique variáveis de ambiente.
+          </p>
+        </div>
       </div>
     );
   }
@@ -76,31 +79,33 @@ export default function PendingPage() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Pagamento em processamento ⏳</h1>
-      <p className={styles.subtitleText}>
-        Status atual: <strong>{status}</strong>
-      </p>
+      <div className={styles.modal}>
+        <h1 className={styles.title}>Pagamento em processamento ⏳</h1>
+        <p className={styles.subtitleText}>
+          Status atual: <strong>{status}</strong>
+        </p>
 
-      <p className={styles.textDescribe}>
-        Assim que o Mercado Pago confirmar o pagamento, você poderá liberar o
-        acesso manualmente.
-      </p>
+        <p className={styles.textDescribe}>
+          Assim que o Mercado Pago confirmar o pagamento, você poderá liberar o
+          acesso manualmente.
+        </p>
 
-      <button
-        onClick={handleLiberarAcesso}
-        style={{
-          backgroundColor: "#1976d2",
-          color: "#fff",
-          padding: "12px 24px",
-          borderRadius: "6px",
-          border: "none",
-          cursor: "pointer",
-          fontSize: "16px",
-          marginTop: "20px",
-        }}
-      >
-        Conferir status de pagamento
-      </button>
+        <button
+          onClick={handleLiberarAcesso}
+          style={{
+            backgroundColor: "#1976d2",
+            color: "#fff",
+            padding: "12px 24px",
+            borderRadius: "6px",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "16px",
+            marginTop: "20px",
+          }}
+        >
+          Conferir status de pagamento
+        </button>
+      </div>
     </div>
   );
 }
