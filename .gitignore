@@ -12,3 +12,5 @@ project.tar.gz
 
 # Ignorar página de teste
 pages/modal-test.js
+pages/test-success.js
+pages/test-failures.js

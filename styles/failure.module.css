@@ -1,27 +1,38 @@
 .container {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-
-  background-color: #d9d9d9;
-  padding: 3rem;
   min-height: 100vh;
+  background-color: #d9d9d9;
 }
 
 .modal {
-  background-color: #fff;
   width: 100%;
-  max-width: 560px;
-  min-height: 200px;
+  max-width: 380px;
+  background-color: #fff;
   padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   text-align: center;
 }
+.icon {
+  width: 48px;
+  height: 48px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #ff6f00; /* cor do ícone */
+  -webkit-mask-image: url("../public/icons/alert.svg");
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+  mask-image: url("../public/icons/alert.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+}
 
 .title {
-  color: #333;
+  color: #141414;
   font-size: 2rem;
   font-weight: bold;
   margin-bottom: 1rem;
@@ -29,8 +40,8 @@
 
 .textDescribe {
   font-size: 1.2rem;
-  color: #333;
-  margin: auto;
-  margin-bottom: 2rem;
+  color: #141414;
+  margin: 0 auto;
   max-width: 400px;
+  margin-bottom: 2rem;
 }

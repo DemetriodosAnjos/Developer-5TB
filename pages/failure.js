@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { supabasePublic } from "../lib/supabaseClient";
+import { useRouter } from "next/router";
 import styles from "../styles/failure.module.css";
 
 export default function FailurePage() {
   const [status, setStatus] = useState("loading");
+  const router = useRouter();
 
   useEffect(() => {
     const externalReference = new URLSearchParams(window.location.search).get(
@@ -25,19 +27,26 @@ export default function FailurePage() {
       if (error) {
         console.error("Erro ao consultar Supabase:", error);
         setStatus("error");
+        return;
+      }
+
+      if (data?.status === "approved") {
+        router.push("/success");
+      } else if (data?.status === "pending") {
+        router.push("/pending");
       } else if (data?.status === "rejected" || data?.status === "cancelled") {
         setStatus("failure");
       } else {
-        setStatus("pending");
+        setStatus("error");
       }
     };
 
     checkStatus();
     const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [router]);
 
-  if (status === "loading" || status === "pending") {
+  if (status === "loading") {
     return (
       <div className={styles.loadingOverlay}>
         <p className={styles.loadingText}>⏳ Verificando status...</p>
@@ -67,7 +76,8 @@ export default function FailurePage() {
   return (
     <div className={styles.container}>
       <div className={styles.modal}>
-        <h1 style={{ color: "orange" }}>⚠️ Atenção</h1>
+        <div className={styles.icon}></div>
+        <h1 className={styles.title}>Pagamento em processamento</h1>
         <p className={styles.textDescribe}>
           Não foi possível confirmar o status do pagamento.
         </p>

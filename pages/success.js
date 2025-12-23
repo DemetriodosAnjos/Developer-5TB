@@ -57,7 +57,7 @@ export default function SuccessPage() {
     return (
       <div className={styles.container}>
         <div className={styles.modal}>
-          <div className={styles.icon}></div> {/* ícone via mask-image */}
+          <div className={styles.icon}></div>
           <h1 className={styles.title}>Pagamento confirmado</h1>
           <p className={styles.subtitleText}>Seu acesso foi liberado!</p>
           <p className={styles.textDescribe}>

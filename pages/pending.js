@@ -64,7 +64,21 @@ export default function PendingPage() {
       return;
     }
 
-    if (status === "approved") {
+    // Consulta o status atual no Supabase
+    const { data, error } = await supabasePublic
+      .from("sales")
+      .select("status")
+      .eq("external_reference", externalReference)
+      .single();
+
+    if (error) {
+      console.error("Erro ao consultar Supabase:", error);
+      alert("Erro ao verificar status. Tente novamente.");
+      return;
+    }
+
+    if (data?.status === "approved") {
+      // dispara API para liberar acesso
       await fetch("/api/send-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -72,15 +86,18 @@ export default function PendingPage() {
       });
 
       router.push("/success");
-    } else {
+    } else if (data?.status === "pending") {
       alert("Pagamento ainda em processamento. Aguarde alguns segundos.");
+    } else {
+      router.push("/failure");
     }
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.modal}>
-        <h1 className={styles.title}>Pagamento em processamento ⏳</h1>
+        <div className={styles.icon}></div>
+        <h1 className={styles.title}>Pagamento em processamento</h1>
         <p className={styles.subtitleText}>
           Status atual: <strong>{status}</strong>
         </p>
