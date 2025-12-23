@@ -5,58 +5,58 @@ import styles from "../styles/success.module.css";
 
 export default function SuccessPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true); // controla spinner inicial
-  const [status, setStatus] = useState(null); // controla status do supabase
-  const [retryCount, setRetryCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [status, setStatus] = useState(null);
 
-  const externalReference =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search).get("external_reference")
-      : null;
+  const externalReference = router.query?.external_reference;
 
   // ⏳ Loading inicial de 4 segundos
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 4000);
-
+    const timer = setTimeout(() => setLoading(false), 4000);
     return () => clearTimeout(timer);
   }, []);
 
   // 🔄 Consulta ao Supabase + retry automático
   useEffect(() => {
-    if (!loading && externalReference) {
-      const checkStatus = async () => {
-        try {
-          const { data, error } = await supabasePublic
-            .from("sales")
-            .select("status")
-            .eq("external_reference", externalReference)
-            .single();
+    if (loading) return;
+    if (!router.isReady) return;
 
-          if (error) {
-            console.error("Erro ao consultar Supabase:", error);
-            setStatus("failure");
-            return;
-          }
+    if (!externalReference) {
+      setStatus("failure");
+      return;
+    }
 
-          if (data?.status === "approved") {
-            setStatus("approved");
-          } else {
-            setStatus("pending");
-            setRetryCount((prev) => prev + 1);
-          }
-        } catch (err) {
-          console.error("Erro inesperado:", err);
+    const checkStatus = async () => {
+      try {
+        const { data, error } = await supabasePublic
+          .from("sales")
+          .select("status")
+          .eq("external_reference", externalReference)
+          .single();
+
+        if (error) {
+          console.error("Erro ao consultar Supabase:", error);
+          setStatus("failure");
+          return;
+        }
+
+        if (data?.status === "approved") {
+          setStatus("approved");
+        } else if (data?.status === "pending") {
+          setStatus("pending");
+        } else {
           setStatus("failure");
         }
-      };
+      } catch (err) {
+        console.error("Erro inesperado:", err);
+        setStatus("failure");
+      }
+    };
 
-      checkStatus();
-      const interval = setInterval(checkStatus, 5000); // retry a cada 5s
-      return () => clearInterval(interval);
-    }
-  }, [loading, externalReference]);
+    checkStatus();
+    const interval = setInterval(checkStatus, 5000);
+    return () => clearInterval(interval);
+  }, [loading, router.isReady, externalReference]);
 
   // 👉 Enquanto loading inicial
   if (loading) {
@@ -88,7 +88,7 @@ export default function SuccessPage() {
   }
 
   // 👉 Caso ainda esteja pendente (retry ativo)
-  if (status === "pending" && retryCount < 3) {
+  if (status === "pending") {
     return (
       <div className={styles.container}>
         <div className={styles.modal}>
@@ -101,23 +101,19 @@ export default function SuccessPage() {
     );
   }
 
-  // 👉 Caso falha após várias tentativas
-  if (status === "failure" || retryCount >= 3) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.modal}>
-          <div className={styles.icon}></div>
-          <h1 className={styles.title}>Pagamento em processamento</h1>
-          <p className={styles.textDescribe}>
-            Não foi possível confirmar o status do pagamento.
-          </p>
-          <a href="/pendente" className={styles.link}>
-            Voltar à loja
-          </a>
-        </div>
+  // 👉 Falha controlada
+  return (
+    <div className={styles.container}>
+      <div className={styles.modal}>
+        <div className={styles.icon}></div>
+        <h1 className={styles.title}>Pagamento em processamento</h1>
+        <p className={styles.textDescribe}>
+          Não foi possível confirmar o status do pagamento.
+        </p>
+        <a href="/pendente" className={styles.link}>
+          Voltar à loja
+        </a>
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 }

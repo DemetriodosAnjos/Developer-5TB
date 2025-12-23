@@ -85,7 +85,11 @@ export default function PendingPage() {
         body: JSON.stringify({ externalReference }),
       });
 
-      router.push("/success");
+      // envia external_reference na URL
+      router.push({
+        pathname: "/success",
+        query: { external_reference: externalReference },
+      });
     } else if (data?.status === "pending") {
       alert("Pagamento ainda em processamento. Aguarde alguns segundos.");
     } else {
