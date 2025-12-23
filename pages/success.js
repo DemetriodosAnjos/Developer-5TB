@@ -7,6 +7,7 @@ export default function SuccessPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true); // controla spinner inicial
   const [status, setStatus] = useState(null); // controla status do supabase
+  const [retryCount, setRetryCount] = useState(0);
 
   const externalReference =
     typeof window !== "undefined"
@@ -35,21 +36,19 @@ export default function SuccessPage() {
 
           if (error) {
             console.error("Erro ao consultar Supabase:", error);
-            router.push("/failure");
+            setStatus("failure");
             return;
           }
 
           if (data?.status === "approved") {
             setStatus("approved");
-          } else if (data?.status === "pending") {
-            // mantém retry até virar approved
-            setStatus("pending");
           } else {
-            router.push("/failure");
+            setStatus("pending");
+            setRetryCount((prev) => prev + 1);
           }
         } catch (err) {
           console.error("Erro inesperado:", err);
-          router.push("/failure");
+          setStatus("failure");
         }
       };
 
@@ -57,7 +56,7 @@ export default function SuccessPage() {
       const interval = setInterval(checkStatus, 5000); // retry a cada 5s
       return () => clearInterval(interval);
     }
-  }, [loading, externalReference, router]);
+  }, [loading, externalReference]);
 
   // 👉 Enquanto loading inicial
   if (loading) {
@@ -89,18 +88,36 @@ export default function SuccessPage() {
   }
 
   // 👉 Caso ainda esteja pendente (retry ativo)
-  if (status === "pending") {
+  if (status === "pending" && retryCount < 3) {
     return (
       <div className={styles.container}>
         <div className={styles.modal}>
           <div className={styles.spinner}></div>
           <p className={styles.loadingText}>
-            Aguardando confirmação do pagamento...
+            Mais um momento, estamos quase lá...
           </p>
         </div>
       </div>
     );
   }
 
-  return null; // outros casos redirecionam
+  // 👉 Caso falha após várias tentativas
+  if (status === "failure" || retryCount >= 3) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.modal}>
+          <div className={styles.icon}></div>
+          <h1 className={styles.title}>Pagamento em processamento</h1>
+          <p className={styles.textDescribe}>
+            Não foi possível confirmar o status do pagamento.
+          </p>
+          <a href="/pendente" className={styles.link}>
+            Voltar à loja
+          </a>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
