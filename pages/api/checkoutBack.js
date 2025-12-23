@@ -22,20 +22,24 @@ export default async function handler(req, res) {
     const external_reference = uuidv4();
 
     // ✅ Define preço fixo no backend
-    const fixedAmount = 0.93;
+    const fixedAmount = 0.91;
 
     // ✅ Salva no Supabase usando o cliente admin
-    const { data, error } = await supabaseAdmin.from("sales").insert([
-      {
-        name,
-        email,
-        phone,
-        status: "pending",
-        external_reference,
-        amount: fixedAmount,
-        payment_method: "pix",
-      },
-    ]);
+    const { data, error } = await supabaseAdmin
+      .from("sales")
+      .insert([
+        {
+          name,
+          email,
+          phone,
+          status: "pending",
+          external_reference,
+          amount: fixedAmount,
+          payment_method: "pix",
+        },
+      ])
+      .select()
+      .single();
 
     if (error) {
       console.error("Erro ao salvar no Supabase:", error);
