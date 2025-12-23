@@ -22,7 +22,7 @@ export default async function handler(req, res) {
     const external_reference = uuidv4();
 
     // ✅ Define preço fixo no backend
-    const fixedAmount = 0.89;
+    const fixedAmount = 0.83;
 
     // ✅ Salva no Supabase usando o cliente admin
     const { data, error } = await supabaseAdmin
