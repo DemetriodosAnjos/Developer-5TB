@@ -1,4 +1,4 @@
-import styles from "../styles/pending.module.css";
+import styles from "../styles/Pending.module.css";
 
 export default function ModalTest() {
   return (
