@@ -69,10 +69,6 @@ export default async function handler(req, res) {
         pending: "https://developer-5-tb.vercel.app/pending",
       },
       auto_return: "approved",
-      payment_methods: {
-        excluded_payment_types: [{ id: "credit_card" }, { id: "ticket" }],
-        default_payment_method_id: "pix",
-      },
     };
 
     const result = await preferenceClient.create({ body: preference });
