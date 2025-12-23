@@ -5,7 +5,8 @@ import styles from "../styles/success.module.css";
 
 export default function SuccessPage() {
   const router = useRouter();
-  const [status, setStatus] = useState(null);
+  const [loading, setLoading] = useState(true); // controla spinner inicial
+  const [status, setStatus] = useState(null); // controla status do supabase
 
   const externalReference =
     typeof window !== "undefined"
@@ -13,7 +14,10 @@ export default function SuccessPage() {
       : null;
 
   useEffect(() => {
-    const checkStatus = async () => {
+    // ⏳ mostra loading por 3–4 segundos antes de consultar
+    const timer = setTimeout(async () => {
+      setLoading(false);
+
       if (!externalReference) return;
 
       const { data, error } = await supabasePublic
@@ -35,13 +39,13 @@ export default function SuccessPage() {
       } else {
         router.push("/failure");
       }
-    };
+    }, 4000); // 4 segundos de loading
 
-    checkStatus();
+    return () => clearTimeout(timer);
   }, [externalReference, router]);
 
-  // 👉 Loading enquanto status ainda não foi definido
-  if (status === null) {
+  // 👉 Enquanto loading inicial
+  if (loading) {
     return (
       <div className={styles.container}>
         <div className={styles.modal}>
@@ -69,5 +73,5 @@ export default function SuccessPage() {
     );
   }
 
-  return null; // não deve chegar aqui, pois outros casos redirecionam
+  return null; // outros casos redirecionam
 }
