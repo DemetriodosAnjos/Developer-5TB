@@ -13,44 +13,51 @@ export default function SuccessPage() {
       ? new URLSearchParams(window.location.search).get("external_reference")
       : null;
 
+  // ⏳ Loading inicial de 4 segundos
   useEffect(() => {
-    // ⏳ mostra loading por 4 segundos antes de consultar
-    const timer = setTimeout(async () => {
+    const timer = setTimeout(() => {
       setLoading(false);
-
-      if (!externalReference) {
-        router.push("/failure");
-        return;
-      }
-
-      try {
-        const { data, error } = await supabasePublic
-          .from("sales")
-          .select("status")
-          .eq("external_reference", externalReference)
-          .single();
-
-        if (error) {
-          console.error("Erro ao consultar Supabase:", error);
-          router.push("/failure");
-          return;
-        }
-
-        if (data?.status === "approved") {
-          setStatus("approved");
-        } else if (data?.status === "pending") {
-          router.push("/pending");
-        } else {
-          router.push("/failure");
-        }
-      } catch (err) {
-        console.error("Erro inesperado:", err);
-        router.push("/failure");
-      }
-    }, 4000); // 4 segundos de loading
+    }, 4000);
 
     return () => clearTimeout(timer);
-  }, [externalReference, router]);
+  }, []);
+
+  // 🔄 Consulta ao Supabase + retry automático
+  useEffect(() => {
+    if (!loading && externalReference) {
+      const checkStatus = async () => {
+        try {
+          const { data, error } = await supabasePublic
+            .from("sales")
+            .select("status")
+            .eq("external_reference", externalReference)
+            .single();
+
+          if (error) {
+            console.error("Erro ao consultar Supabase:", error);
+            router.push("/failure");
+            return;
+          }
+
+          if (data?.status === "approved") {
+            setStatus("approved");
+          } else if (data?.status === "pending") {
+            // mantém retry até virar approved
+            setStatus("pending");
+          } else {
+            router.push("/failure");
+          }
+        } catch (err) {
+          console.error("Erro inesperado:", err);
+          router.push("/failure");
+        }
+      };
+
+      checkStatus();
+      const interval = setInterval(checkStatus, 5000); // retry a cada 5s
+      return () => clearInterval(interval);
+    }
+  }, [loading, externalReference, router]);
 
   // 👉 Enquanto loading inicial
   if (loading) {
@@ -75,6 +82,20 @@ export default function SuccessPage() {
           <p className={styles.textDescribe}>
             Verifique seu e‑mail para instruções de acesso. Obrigado por confiar
             no nosso serviço.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 👉 Caso ainda esteja pendente (retry ativo)
+  if (status === "pending") {
+    return (
+      <div className={styles.container}>
+        <div className={styles.modal}>
+          <div className={styles.spinner}></div>
+          <p className={styles.loadingText}>
+            Aguardando confirmação do pagamento...
           </p>
         </div>
       </div>
