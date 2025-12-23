@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabasePublic } from "../lib/supabaseClient";
 import { useRouter } from "next/router";
-import styles from "../styles/Pending.module.css";
+import styles from "../styles/pending.module.css";
 console.log("Styles carregado:", styles);
 
 export default function PendingPage() {
