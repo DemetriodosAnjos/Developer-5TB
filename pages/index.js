@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import styles from "../styles/index.module.css";
+import styles from "../styles/Index.module.css";
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
