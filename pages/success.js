@@ -14,29 +14,37 @@ export default function SuccessPage() {
       : null;
 
   useEffect(() => {
-    // ⏳ mostra loading por 3–4 segundos antes de consultar
+    // ⏳ mostra loading por 4 segundos antes de consultar
     const timer = setTimeout(async () => {
       setLoading(false);
 
-      if (!externalReference) return;
-
-      const { data, error } = await supabasePublic
-        .from("sales")
-        .select("status")
-        .eq("external_reference", externalReference)
-        .single();
-
-      if (error) {
-        console.error("Erro ao consultar Supabase:", error);
+      if (!externalReference) {
         router.push("/failure");
         return;
       }
 
-      if (data?.status === "approved") {
-        setStatus("approved");
-      } else if (data?.status === "pending") {
-        router.push("/pending");
-      } else {
+      try {
+        const { data, error } = await supabasePublic
+          .from("sales")
+          .select("status")
+          .eq("external_reference", externalReference)
+          .single();
+
+        if (error) {
+          console.error("Erro ao consultar Supabase:", error);
+          router.push("/failure");
+          return;
+        }
+
+        if (data?.status === "approved") {
+          setStatus("approved");
+        } else if (data?.status === "pending") {
+          router.push("/pending");
+        } else {
+          router.push("/failure");
+        }
+      } catch (err) {
+        console.error("Erro inesperado:", err);
         router.push("/failure");
       }
     }, 4000); // 4 segundos de loading
