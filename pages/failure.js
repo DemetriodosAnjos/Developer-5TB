@@ -1,6 +1,6 @@
-// pages/failure.js
 import { useState, useEffect } from "react";
 import { supabasePublic } from "../lib/supabaseClient";
+import styles from "../styles/failure.module.css";
 
 export default function FailurePage() {
   const [status, setStatus] = useState("loading");
@@ -33,55 +33,48 @@ export default function FailurePage() {
     };
 
     checkStatus();
-    const interval = setInterval(checkStatus, 5000); // checa a cada 5s
+    const interval = setInterval(checkStatus, 5000);
     return () => clearInterval(interval);
   }, []);
 
   if (status === "loading" || status === "pending") {
     return (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          backgroundColor: "rgba(0,0,0,0.6)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <p style={{ color: "#fff", fontSize: "20px" }}>
-          ⏳ Verificando status...
-        </p>
+      <div className={styles.loadingOverlay}>
+        <p className={styles.loadingText}>⏳ Verificando status...</p>
       </div>
     );
   }
 
   if (status === "failure") {
     return (
-      <div
-        style={{
-          textAlign: "center",
-          marginTop: "80px",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <h1 style={{ color: "#c62828" }}>❌ Ops!</h1>
-        <h2>Seu pagamento não foi concluído</h2>
-        <p>Tente novamente ou escolha outro meio de pagamento.</p>
-        <a href="/pendente" style={{ color: "#1976d2" }}>
-          Voltar à loja
-        </a>
+      <div className={styles.container}>
+        <div className={styles.modal}>
+          <h1 className={styles.title}>❌ Ops!</h1>
+          <h2 className={styles.subtitleText}>
+            Seu pagamento não foi concluído
+          </h2>
+          <p className={styles.textDescribe}>
+            Tente novamente ou escolha outro meio de pagamento.
+          </p>
+          <a href="/pendente" className={styles.link}>
+            Voltar à loja
+          </a>
+        </div>
       </div>
     );
   }
 
   return (
-    <div style={{ textAlign: "center", marginTop: "80px" }}>
-      <h1 style={{ color: "orange" }}>⚠️ Atenção</h1>
-      <p>Não foi possível confirmar o status do pagamento.</p>
+    <div className={styles.container}>
+      <div className={styles.modal}>
+        <h1 style={{ color: "orange" }}>⚠️ Atenção</h1>
+        <p className={styles.textDescribe}>
+          Não foi possível confirmar o status do pagamento.
+        </p>
+        <a href="/pendente" className={styles.link}>
+          Voltar à loja
+        </a>
+      </div>
     </div>
   );
 }

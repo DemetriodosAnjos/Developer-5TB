@@ -9,3 +9,6 @@ project.tar.gz
 
 .vercel
 .env*.local
+
+# Ignorar página de teste
+pages/modal-test.js

@@ -1,8 +1,10 @@
-// pages/success.js
 import { useEffect, useState } from "react";
 import { supabasePublic } from "../lib/supabaseClient";
+import { useRouter } from "next/router";
+import styles from "../styles/success.module.css";
 
 export default function SuccessPage() {
+  const router = useRouter();
   const [status, setStatus] = useState(null);
 
   const externalReference =
@@ -22,38 +24,50 @@ export default function SuccessPage() {
 
       if (error) {
         console.error("Erro ao consultar Supabase:", error);
-        setStatus("error");
+        router.push("/failure");
         return;
       }
 
-      setStatus(data?.status);
+      if (data?.status === "approved") {
+        setStatus("approved");
+      } else if (data?.status === "pending") {
+        router.push("/pending");
+      } else {
+        router.push("/failure");
+      }
     };
 
     checkStatus();
-  }, [externalReference]);
+  }, [externalReference, router]);
 
+  // 👉 Loading enquanto status ainda não foi definido
+  if (status === null) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.modal}>
+          <div className={styles.spinner}></div>
+          <p className={styles.loadingText}>Carregando pagamento...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // 👉 Caso aprovado
   if (status === "approved") {
     return (
-      <div style={{ textAlign: "center", marginTop: "80px" }}>
-        <h1 style={{ color: "green" }}>✅ Pagamento confirmado</h1>
-        <p>Seu acesso foi liberado. Verifique seu e‑mail.</p>
+      <div className={styles.container}>
+        <div className={styles.modal}>
+          <div className={styles.icon}></div> {/* ícone via mask-image */}
+          <h1 className={styles.title}>Pagamento confirmado</h1>
+          <p className={styles.subtitleText}>Seu acesso foi liberado!</p>
+          <p className={styles.textDescribe}>
+            Verifique seu e‑mail para instruções de acesso. Obrigado por confiar
+            no nosso serviço.
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (status === "pending") {
-    return (
-      <div style={{ textAlign: "center", marginTop: "80px" }}>
-        <h1 style={{ color: "orange" }}>⏳ Pagamento em processamento</h1>
-        <p>Aguarde alguns minutos e tente novamente.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div style={{ textAlign: "center", marginTop: "80px" }}>
-      <h1 style={{ color: "red" }}>❌ Erro</h1>
-      <p>Não foi possível confirmar seu pagamento.</p>
-    </div>
-  );
+  return null; // não deve chegar aqui, pois outros casos redirecionam
 }
