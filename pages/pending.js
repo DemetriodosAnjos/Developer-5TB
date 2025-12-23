@@ -1,4 +1,3 @@
-// pages/pending.js
 import { useEffect, useState } from "react";
 import { supabasePublic } from "../lib/supabaseClient";
 import { useRouter } from "next/router";
@@ -8,35 +7,30 @@ export default function PendingPage() {
   const router = useRouter();
   const [status, setStatus] = useState("pending");
 
-  // Captura external_reference da URL
   const externalReference =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("external_reference")
       : null;
 
-  // Proteção contra variáveis faltando
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
-    console.error("Supabase não configurado corretamente");
+  // Verifica se o client foi criado corretamente
+  if (!supabasePublic) {
     return (
       <div className={styles.container}>
-        <h1 className={styles.title}>Erro de configuração</h1>
+        <h1 className={styles.title}>Erro de inicialização</h1>
         <p className={styles.textDescribe}>
-          Supabase não inicializado. Verifique variáveis de ambiente.
+          Supabase client não foi carregado. Verifique variáveis de ambiente.
         </p>
       </div>
     );
   }
 
-  // Consulta status sem redirecionar automático
   useEffect(() => {
     console.log("SUPABASE URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
     console.log(
       "SUPABASE ANON KEY:",
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     );
+
     const checkStatus = async () => {
       if (!externalReference) return;
 
@@ -61,7 +55,6 @@ export default function PendingPage() {
     return () => clearInterval(interval);
   }, [externalReference]);
 
-  // Função do botão
   const handleLiberarAcesso = async () => {
     if (!externalReference) {
       alert("External reference não encontrado na URL");
@@ -69,7 +62,6 @@ export default function PendingPage() {
     }
 
     if (status === "approved") {
-      // Dispara e‑mail via API
       await fetch("/api/send-access", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
