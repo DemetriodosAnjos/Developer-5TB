@@ -1,12 +1,24 @@
 // pages/api/checkoutBack.js
+//----------------------
+// 1. Imports e Dependências
+//----------------------
 import { v4 as uuidv4 } from "uuid";
 import { supabaseAdmin } from "../../lib/supabaseClient";
 
+//----------------------
+// 2. Definição do Handler (Função Principal)
+//----------------------
 export default async function handler(req, res) {
+  //----------------------
+  // 3. Validação de Segurança (O Filtro)
+  //----------------------
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Use POST" });
   }
 
+  //----------------------
+  // 4. Configuração do Ambiente de Pagamento
+  //----------------------
   try {
     const mpModule = await import("mercadopago");
     const { MercadoPagoConfig, Preference } = mpModule;
@@ -16,15 +28,21 @@ export default async function handler(req, res) {
     });
     const preferenceClient = new Preference(client);
 
+    //----------------------
+    // 5. Preparação dos Dados e Referência Única
+    //----------------------
     const { name, email, phone, description } = req.body;
 
-    // ✅ Gera referência única
+    // Gera referência única
     const external_reference = uuidv4();
 
-    // ✅ Define preço fixo no backend
-    const fixedAmount = 0.69;
+    // Define preço fixo no backend
+    const fixedAmount = 19.9;
 
-    // ✅ Salva no Supabase usando o cliente admin
+    //----------------------
+    // 6. Persistência de Dados (Supabase)
+    //----------------------
+    // Salva no Supabase usando o cliente admin
     const { data, error } = await supabaseAdmin
       .from("sales")
       .insert([
@@ -52,7 +70,10 @@ export default async function handler(req, res) {
       id: data?.[0]?.id,
     });
 
-    // ✅ Cria preferência no Mercado Pago
+    //----------------------
+    // 7. Criação da Preferência (Mercado Pago)
+    //----------------------
+    // Cria preferência no Mercado Pago
     const preference = {
       items: [
         {
@@ -71,6 +92,9 @@ export default async function handler(req, res) {
       auto_return: "approved",
     };
 
+    //----------------------
+    // 8. Resposta Final
+    //----------------------
     const result = await preferenceClient.create({ body: preference });
 
     return res.status(200).json({ id: result.id });
