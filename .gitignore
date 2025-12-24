@@ -14,3 +14,19 @@ project.tar.gz
 pages/modal-test.js
 pages/test-success.js
 pages/test-failures.js
+
+# OS X
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Logs
+npm-debug.log*
+
+
+# Variáveis de ambiente extras
+.env
+.env.production
+.env.development
